@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07070a">
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ma+Shan+Zheng&display=swap">
+<title>霸王号商</title>
+<style>
+  :root{
+    --bg:#07070a;
+    --bg-2:#0d0d12;
+    --card-border:rgba(255,255,255,.07);
+    --gold:#e8b64c;
+    --gold-2:#f6d489;
+    --gold-deep:#c8902f;
+    --text:#f4f2ec;
+    --muted:#8b8a94;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ============================================================
+     加载页（15 秒后自动进入主页面，后台设置，不向客户展示读秒）
+     ============================================================ */
+  #loader{
+    position:fixed;inset:0;z-index:1000;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(700px 500px at 50% 42%, rgba(232,182,76,.10), transparent 65%),
+      var(--bg);
+    transition:opacity .7s ease, visibility .7s ease;
+  }
+  #loader.is-leaving{opacity:0;visibility:hidden;pointer-events:none;}
+  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:28px;}
+  .loader-lang{position:absolute;top:22px;right:22px;z-index:2;}
+  .loader-brand{
+    font-family:"Ma Shan Zheng","STXingkai","华文行楷","LiSu","隶书","KaiTi","楷体",serif;
+    font-size:48px;font-weight:400;letter-spacing:8px;
+    background:linear-gradient(180deg,#fff 20%,var(--gold-2) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .bar-loader{position:relative;width:70px;height:70px;}
+  .bar-loader .bar{
+    position:absolute;width:6px;height:18px;
+    background:#fff;border-radius:4px;
+    left:50%;top:50%;margin-left:-3px;margin-top:-9px;
+    opacity:.15;
+    animation:bar-fade 1.2s infinite linear;
+  }
+  .loader-text{color:#fff;font-size:18px;letter-spacing:1px;}
+  .dots i{font-style:normal;animation:dot-blink 1.4s infinite;}
+  .dots i:nth-child(2){animation-delay:.2s;}
+  .dots i:nth-child(3){animation-delay:.4s;}
+  @keyframes dot-blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+  @keyframes bar-fade{
+    0%{opacity:.15;}10%{opacity:1;}20%{opacity:.75;}30%{opacity:.35;}40%{opacity:.15;}100%{opacity:.15;}
+  }
+
+  /* ============================================================
+     主页面：顶部导航（左上品牌 + 右上语言切换）+ PDF 展示区
+     ============================================================ */
+  #main{
+    position:fixed;inset:0;z-index:1;
+    display:flex;flex-direction:column;
+    background:var(--bg);
+    opacity:0;pointer-events:none;
+    transition:opacity .8s ease;
+  }
+  #main.is-active{opacity:1;pointer-events:auto;}
+
+  .header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 22px;
+    background:rgba(13,13,18,.82);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--card-border);
+    flex:none;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-size:18px;letter-spacing:2px;}
+  .brand .logo{
+    width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--gold-2),var(--gold-deep));
+    color:#140f04;font-size:17px;font-weight:900;
+    box-shadow:0 6px 16px -6px rgba(232,182,76,.6);
+  }
+  .brand b{
+    font-weight:400;
+    font-family:"Ma Shan Zheng","STXingkai","华文行楷","LiSu","隶书","KaiTi","楷体",serif;
+  }
+
+  /* 语言切换 */
+  .lang-switch{
+    display:flex;gap:3px;
+    padding:3px;
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--card-border);
+    border-radius:999px;
+  }
+  .lang-switch button{
+    border:none;cursor:pointer;
+    padding:7px 18px;border-radius:999px;
+    background:transparent;color:var(--muted);
+    font-size:14px;font-weight:600;letter-spacing:1px;
+    transition:background .25s ease, color .25s ease, box-shadow .25s ease;
+  }
+  .lang-switch button:hover{color:var(--text);}
+  .lang-switch button.active{
+    background:linear-gradient(135deg,var(--gold-2),var(--gold-deep));
+    color:#241803;
+    box-shadow:0 6px 16px -6px rgba(232,182,76,.6);
+  }
+
+  /* PDF 展示区（PDF.js 渲染，适配手机竖屏滚动查看） */
+  .pdf-wrap{
+    flex:1;position:relative;min-height:0;
+    background:#2b2b30;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #pdf-status{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    color:var(--muted);font-size:15px;letter-spacing:1px;z-index:1;text-align:center;
+  }
+  #pdf-container{width:100%;}
+  #pdf-container canvas{
+    display:block;width:100%;height:auto;background:#fff;margin:0 auto;
+    box-shadow:0 6px 24px rgba(0,0,0,.45);
+  }
+  #pdf-container canvas + canvas{border-top:1px solid #1c1c21;}
+
+  @media (max-width:600px){
+    .header{padding:10px 14px;}
+    .brand{font-size:15px;gap:8px;}
+    .lang-switch button{padding:6px 14px;font-size:13px;}
+    .loader-brand{font-size:38px;letter-spacing:5px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===================== 加载页 ===================== -->
+  <div id="loader">
+    <div class="lang-switch loader-lang">
+      <button type="button" data-lang="cn" class="active">中文</button>
+      <button type="button" data-lang="en">English</button>
+    </div>
+    <div class="loader-inner">
+      <div class="loader-brand">霸王号商</div>
+      <div class="bar-loader">
+        <div class="bar" style="transform: rotate(0deg) translateY(-25px); animation-delay: 0s;"></div>
+        <div class="bar" style="transform: rotate(30deg) translateY(-25px); animation-delay: 0.1s;"></div>
+        <div class="bar" style="transform: rotate(60deg) translateY(-25px); animation-delay: 0.2s;"></div>
+        <div class="bar" style="transform: rotate(90deg) translateY(-25px); animation-delay: 0.3s;"></div>
+        <div class="bar" style="transform: rotate(120deg) translateY(-25px); animation-delay: 0.4s;"></div>
+        <div class="bar" style="transform: rotate(150deg) translateY(-25px); animation-delay: 0.5s;"></div>
+        <div class="bar" style="transform: rotate(180deg) translateY(-25px); animation-delay: 0.6s;"></div>
+        <div class="bar" style="transform: rotate(210deg) translateY(-25px); animation-delay: 0.7s;"></div>
+        <div class="bar" style="transform: rotate(240deg) translateY(-25px); animation-delay: 0.8s;"></div>
+        <div class="bar" style="transform: rotate(270deg) translateY(-25px); animation-delay: 0.9s;"></div>
+        <div class="bar" style="transform: rotate(300deg) translateY(-25px); animation-delay: 1.0s;"></div>
+        <div class="bar" style="transform: rotate(330deg) translateY(-25px); animation-delay: 1.1s;"></div>
+      </div>
+      <div class="loader-text"><span class="loader-text-label">加载中</span><span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
+    </div>
+  </div>
+
+  <!-- ===================== 主页面 ===================== -->
+  <div id="main">
+
+    <header class="header">
+      <div class="brand">
+        <span class="logo">霸</span>
+        <b>霸王号商</b>
+      </div>
+      <div class="lang-switch">
+        <button type="button" data-lang="cn" class="active">中文</button>
+        <button type="button" data-lang="en">English</button>
+      </div>
+    </header>
+
+    <div class="pdf-wrap">
+      <div id="pdf-status">加载 PDF 中…</div>
+      <div id="pdf-container"></div>
+    </div>
+
+  </div>
+
+<script src="js/pdf.min.js"></script>
+<script>
+(function () {
+  var LOAD_MS = 15000; // 15 秒后进入主页面（后台设置，不向客户展示读秒）
+
+  var loader = document.getElementById('loader');
+  var main   = document.getElementById('main');
+  var label  = document.querySelector('.loader-text-label');
+  var btns   = document.querySelectorAll('.lang-switch button');
+  var status = document.getElementById('pdf-status');
+  var box    = document.getElementById('pdf-container');
+
+  var currentLang = 'cn';
+  var renderToken = 0;
+  var lastWidth   = 0;
+  var resizeTimer = null;
+
+  // PDF.js：使用本地 worker
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
+  }
+
+  // 进入主页面
+  function enter() {
+    loader.classList.add('is-leaving');
+    main.classList.add('is-active');
+    setTimeout(function () { if (loader && loader.parentNode) loader.parentNode.removeChild(loader); }, 800);
+  }
+  setTimeout(enter, LOAD_MS);
+
+  // 渲染 PDF（逐页渲染，竖屏滚动查看）
+  async function renderPdf(url) {
+    if (!window.pdfjsLib) {
+      status.textContent = currentLang === 'cn' ? 'PDF 组件未加载' : 'PDF viewer not loaded';
+      return;
+    }
+    var token = ++renderToken;
+    status.style.display = 'block';
+    status.textContent = currentLang === 'cn' ? '加载 PDF 中…' : 'Loading PDF…';
+    box.innerHTML = '';
+
+    try {
+      var pdf = await window.pdfjsLib.getDocument(url).promise;
+      if (token !== renderToken) return;
+
+      for (var p = 1; p <= pdf.numPages; p++) {
+        if (token !== renderToken) return;
+        var page = await pdf.getPage(p);
+        if (token !== renderToken) return;
+
+        var base = page.getViewport({ scale: 1 });
+        var dpr  = window.devicePixelRatio || 1;
+        var cssW = box.clientWidth || document.documentElement.clientWidth;
+        var scale = cssW / base.width;
+        var viewport = page.getViewport({ scale: scale * dpr });
+
+        var canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        box.appendChild(canvas);
+
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+      }
+
+      if (token === renderToken) {
+        status.style.display = 'none';
+        lastWidth = box.clientWidth;
+      }
+    } catch (err) {
+      if (token === renderToken) {
+        status.textContent = currentLang === 'cn' ? 'PDF 加载失败' : 'Failed to load PDF';
+        console.error(err);
+      }
+    }
+  }
+
+  // 语言切换（加载页 + 主页面同步）
+  function setLang(lang) {
+    currentLang = lang;
+    renderPdf(lang === 'cn' ? 'pdf/cn.pdf' : 'pdf/en.pdf');
+    if (label) label.textContent = lang === 'cn' ? '加载中' : 'Loading';
+    btns.forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+    });
+    document.documentElement.lang = lang === 'cn' ? 'zh-CN' : 'en';
+  }
+
+  btns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setLang(b.getAttribute('data-lang'));
+    });
+  });
+
+  // 手机旋转 / 窗口缩放后重新排版
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      var w = box.clientWidth;
+      if (Math.abs(w - lastWidth) >= 40) {
+        renderPdf(currentLang === 'cn' ? 'pdf/cn.pdf' : 'pdf/en.pdf');
+      }
+    }, 350);
+  });
+
+  setLang('cn');
+})();
+</script>
+</body>
+</html>
