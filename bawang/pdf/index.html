@@ -107,18 +107,31 @@
     color:var(--muted);font-size:15px;letter-spacing:1px;z-index:1;text-align:center;
   }
 
-  /* 合同区块（吸顶标题） */
-  .contract-title{
-    position:sticky;top:0;z-index:2;
-    padding:12px 22px;
-    font-size:17px;font-weight:700;letter-spacing:2px;
-    color:var(--gold-text);
-    background:rgba(255,255,255,.94);
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  /* 合同 Tab 页（合同1 / 合同2） */
+  .tabs{
+    display:flex;flex:none;
+    background:var(--bg);
     border-bottom:1px solid var(--card-border);
+    padding:0 8px;
   }
-  .contract + .contract .contract-title{border-top:1px solid rgba(232,182,76,.25);}
+  .tab{
+    flex:1;border:none;cursor:pointer;
+    padding:14px 0;background:transparent;
+    font-size:15px;font-weight:600;letter-spacing:2px;
+    color:var(--muted);
+    position:relative;
+    transition:color .25s ease;
+    font-family:inherit;
+  }
+  .tab.active{color:var(--gold-text);}
+  .tab.active::after{
+    content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:36px;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,var(--gold-2),var(--gold-deep));
+  }
 
+  .pdf-container{display:none;}
+  .pdf-container.active{display:block;}
   .pdf-container canvas{
     display:block;width:100%;height:auto;background:#fff;margin:0 auto;
     box-shadow:0 6px 20px rgba(0,0,0,.18);
@@ -128,7 +141,7 @@
   @media (max-width:600px){
     .header{padding:10px 14px;}
     .brand{font-size:15px;gap:8px;}
-    .contract-title{padding:10px 14px;font-size:15px;}
+    .tab{font-size:14px;padding:13px 0;}
     .loader-brand{font-size:38px;letter-spacing:5px;}
   }
 </style>
@@ -168,18 +181,15 @@
       </div>
     </header>
 
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="1">合同1</button>
+      <button type="button" class="tab" data-tab="2">合同2</button>
+    </div>
+
     <div class="pdf-wrap">
       <div id="pdf-status">加载 PDF 中…</div>
-
-      <section class="contract">
-        <div class="contract-title">合同1</div>
-        <div id="pdf-container-1" class="pdf-container"></div>
-      </section>
-
-      <section class="contract">
-        <div class="contract-title">合同2</div>
-        <div id="pdf-container-2" class="pdf-container"></div>
-      </section>
+      <div id="pdf-container-1" class="pdf-container active"></div>
+      <div id="pdf-container-2" class="pdf-container"></div>
     </div>
 
   </div>
@@ -297,6 +307,20 @@
         renderAll();
       }
     }, 350);
+  });
+
+  // 合同 Tab 切换
+  var tabs = document.querySelectorAll('.tab');
+  var panels = [box1, box2];
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var idx = parseInt(tab.getAttribute('data-tab'), 10) - 1;
+      panels.forEach(function (panel, i) {
+        panel.classList.toggle('active', i === idx);
+      });
+    });
   });
 
   renderAll();
