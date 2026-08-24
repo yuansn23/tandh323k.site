@@ -561,7 +561,7 @@ body{
             <circle cx="48" cy="48" r="42" fill="none" stroke="#f1f1f1" stroke-width="6"></circle>
             <circle id="orderRing" cx="48" cy="48" r="42" fill="none" stroke="#fe2c55" stroke-width="6" stroke-linecap="round" transform="rotate(-90 48 48)"></circle>
           </svg>
-          <span id="orderCount" class="order-count">100</span>
+          <span id="orderCount" class="order-count">30</span>
         </div>
       </div>
       <div class="dialog-footer">
@@ -746,33 +746,40 @@ function buy() {
 
 var orderTimer = null;
 var ORDER_CIRC = 2 * Math.PI * 42; // 环形周长 ≈263.89
+var ORDER_TOTAL = 30; // 倒计时总秒数
 
 function startOrderCountdown() {
   clearInterval(orderTimer);
   var ring = document.getElementById('orderRing');
   var el = document.getElementById('orderCount');
-  var count = 100;
-  el.textContent = count;
+  var count = ORDER_TOTAL;
 
-  // 环形进度：从满到空，5s 线性耗尽
-  ring.style.transition = 'none';
   ring.setAttribute('stroke-dasharray', ORDER_CIRC);
-  ring.setAttribute('stroke-dashoffset', 0);
-  void ring.getBoundingClientRect(); // 强制回流，确保动画可重触发
-  ring.style.transition = 'stroke-dashoffset 100s linear';
-  ring.setAttribute('stroke-dashoffset', ORDER_CIRC);
+  ring.style.transition = 'none';
+  el.textContent = count;
+  updateRing(ring, count); // 初始化满环
+  ring.style.transition = 'stroke-dashoffset 1s linear'; // 每秒平滑过渡
 
   popCount(el);
   orderTimer = setInterval(function () {
     count--;
     if (count <= 0) {
+      el.textContent = '0';
+      updateRing(ring, 0);
       clearInterval(orderTimer);
       closeOverlay('orderOverlay');
     } else {
       el.textContent = count;
+      updateRing(ring, count);
       popCount(el);
     }
   }, 1000);
+}
+
+// 按剩余百分比驱动圆环：remaining/TOTAL 为剩余比例
+function updateRing(ring, remaining) {
+  var percent = remaining / ORDER_TOTAL; // 1 → 0
+  ring.setAttribute('stroke-dashoffset', ORDER_CIRC * (1 - percent));
 }
 
 function popCount(el) {
