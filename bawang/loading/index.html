@@ -536,12 +536,15 @@ body{
   </div>
 
   <!-- 订单提交结果弹窗 -->
-  <div class="van-overlay" id="orderOverlay" onclick="closeOverlay('orderOverlay')">
+  <div class="van-overlay" id="orderOverlay" onclick="closeOrder()">
     <div class="dialog" onclick="event.stopPropagation()">
       <div class="dialog-header">提示</div>
-      <div class="dialog-body" style="text-align:center;padding:28px 16px;font-size:16px">订单提交成功，正在处理中</div>
+      <div class="dialog-body" style="text-align:center;padding:28px 16px;font-size:16px">
+        订单提交成功，正在处理中
+        <span id="orderCount" style="display:block;margin-top:14px;color:#fe2c55;font-size:24px;font-weight:700">5s</span>
+      </div>
       <div class="dialog-footer">
-        <button class="btn" onclick="closeOverlay('orderOverlay')">关闭</button>
+        <button class="btn" onclick="closeOrder()">关闭</button>
       </div>
     </div>
   </div>
@@ -717,6 +720,29 @@ function buy() {
     return;
   }
   openOverlay('orderOverlay');
+  startOrderCountdown();
+}
+
+var orderTimer = null;
+function startOrderCountdown() {
+  clearInterval(orderTimer);
+  var count = 5;
+  var el = document.getElementById('orderCount');
+  el.textContent = count + 's';
+  orderTimer = setInterval(function () {
+    count--;
+    if (count <= 0) {
+      clearInterval(orderTimer);
+      closeOverlay('orderOverlay');
+    } else {
+      el.textContent = count + 's';
+    }
+  }, 1000);
+}
+
+function closeOrder() {
+  clearInterval(orderTimer);
+  closeOverlay('orderOverlay');
 }
 
 function openRisk() {
