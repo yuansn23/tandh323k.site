@@ -357,6 +357,21 @@ body{
   80%{transform:translate3d(-3%,0,0)}
   to{transform:translateZ(0)}
 }
+
+/* 订单倒计时特效 */
+.order-count-wrap{position:relative;width:96px;height:96px;margin:18px auto 0}
+.order-count-wrap svg{position:absolute;top:0;left:0;display:block}
+.order-count-wrap .order-count{
+  position:absolute;top:0;left:0;width:96px;height:96px;line-height:96px;
+  text-align:center;font-size:34px;font-weight:700;color:#fe2c55;
+  text-shadow:0 2px 6px rgba(254,44,85,.25);
+}
+.order-count-wrap .order-count.pop{animation:count-pop .4s ease}
+@keyframes count-pop{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.4)}
+  100%{transform:scale(1)}
+}
 </style>
 </head>
 <body>
@@ -541,7 +556,13 @@ body{
       <div class="dialog-header">提示</div>
       <div class="dialog-body" style="text-align:center;padding:28px 16px;font-size:16px">
         订单提交成功，正在处理中
-        <span id="orderCount" style="display:block;margin-top:14px;color:#fe2c55;font-size:24px;font-weight:700">5s</span>
+        <div class="order-count-wrap">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle cx="48" cy="48" r="42" fill="none" stroke="#f1f1f1" stroke-width="6"></circle>
+            <circle id="orderRing" cx="48" cy="48" r="42" fill="none" stroke="#fe2c55" stroke-width="6" stroke-linecap="round" transform="rotate(-90 48 48)"></circle>
+          </svg>
+          <span id="orderCount" class="order-count">5</span>
+        </div>
       </div>
       <div class="dialog-footer">
         <button class="btn" onclick="closeOrder()">关闭</button>
@@ -724,20 +745,40 @@ function buy() {
 }
 
 var orderTimer = null;
+var ORDER_CIRC = 2 * Math.PI * 42; // 环形周长 ≈263.89
+
 function startOrderCountdown() {
   clearInterval(orderTimer);
-  var count = 5;
+  var ring = document.getElementById('orderRing');
   var el = document.getElementById('orderCount');
-  el.textContent = count + 's';
+  var count = 5;
+  el.textContent = count;
+
+  // 环形进度：从满到空，5s 线性耗尽
+  ring.style.transition = 'none';
+  ring.setAttribute('stroke-dasharray', ORDER_CIRC);
+  ring.setAttribute('stroke-dashoffset', 0);
+  void ring.getBoundingClientRect(); // 强制回流，确保动画可重触发
+  ring.style.transition = 'stroke-dashoffset 5s linear';
+  ring.setAttribute('stroke-dashoffset', ORDER_CIRC);
+
+  popCount(el);
   orderTimer = setInterval(function () {
     count--;
     if (count <= 0) {
       clearInterval(orderTimer);
       closeOverlay('orderOverlay');
     } else {
-      el.textContent = count + 's';
+      el.textContent = count;
+      popCount(el);
     }
   }, 1000);
+}
+
+function popCount(el) {
+  el.classList.remove('pop');
+  void el.offsetWidth; // 重触发缩放动画
+  el.classList.add('pop');
 }
 
 function closeOrder() {
