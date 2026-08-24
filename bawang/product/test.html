@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>产品采购意向书</title>
+
+<meta name="description" content="欢迎长期稳定供应商，洽谈长期采购合作。">
+
+<!-- Open Graph (Facebook, LinkedIn, 微信, Telegram) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="产品采购意向书 | 长期采购合作 · 诚邀供应商">
+<meta property="og:description" content="欢迎长期稳定供应商，洽谈长期采购合作">
+<meta property="og:image" content="https://tandh323k.site/bawang/product/img/sa1.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="产品采购意向书">
+
+  <!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="产品采购意向书 | 长期采购合作 · 诚邀供应商">
+<meta name="twitter:description" content="欢迎长期稳定供应商，洽谈长期采购合作">
+<meta name="twitter:image" content="https://tandh323k.site/bawang/product/img/sa1.jpg">
+
+  
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-2:#f5f5f7;
+    --card-border:rgba(0,0,0,.08);
+    --gold:#e8b64c;
+    --gold-2:#f6d489;
+    --gold-deep:#c8902f;
+    --gold-text:#b8860b;
+    --text:#1a1a1e;
+    --muted:#7a7a84;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ============================================================
+     加载页（20 秒后自动进入主页面，圆圈显示百分比）
+     ============================================================ */
+  #loader{
+    position:fixed;inset:0;z-index:1000;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(700px 500px at 50% 42%, rgba(232,182,76,.08), transparent 65%),
+      var(--bg);
+    transition:opacity .7s ease, visibility .7s ease;
+  }
+  #loader.is-leaving{opacity:0;visibility:hidden;pointer-events:none;}
+  .loader-inner{display:flex;flex-direction:column;align-items:center;gap:28px;}
+  .loader-brand{
+    font-size:48px;font-weight:700;letter-spacing:8px;
+    background:linear-gradient(180deg,#1a1a1e 20%,var(--gold-text) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+
+  /* 圆圈百分比 */
+  .boot-ring{width:120px;height:120px;position:relative;}
+  .boot-ring svg{width:100%;height:100%;position:absolute;inset:0;}
+  .boot-num{
+    position:absolute;inset:0;z-index:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    line-height:1;
+  }
+  .boot-num b{
+    font-size:36px;font-weight:700;color:var(--text);display:block;line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .boot-num span{font-size:13px;color:var(--gold-text);display:block;margin-top:4px;letter-spacing:1px;}
+
+  .loader-text{color:var(--text);font-size:18px;letter-spacing:1px;}
+  .dots i{font-style:normal;animation:dot-blink 1.4s infinite;}
+  .dots i:nth-child(2){animation-delay:.2s;}
+  .dots i:nth-child(3){animation-delay:.4s;}
+  @keyframes dot-blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
+
+  /* ============================================================
+     主页面：顶部导航 + PDF 展示区（合同1 / 合同2）
+     ============================================================ */
+  #main{
+    position:fixed;inset:0;z-index:1;
+    display:flex;flex-direction:column;
+    background:var(--bg);
+    opacity:0;pointer-events:none;
+    transition:opacity .8s ease;
+  }
+  #main.is-active{opacity:1;pointer-events:auto;}
+
+  .header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 22px;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--card-border);
+    flex:none;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-size:18px;letter-spacing:2px;}
+  .brand .logo{
+    width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--gold-2),var(--gold-deep));
+    color:#140f04;font-size:17px;font-weight:900;
+    box-shadow:0 6px 16px -6px rgba(232,182,76,.6);
+  }
+  .brand b{font-weight:700;font-family:"YouYuan","幼圆","Yuanti SC","圆体-简","PingFang SC","Microsoft YaHei",sans-serif;}
+
+  /* PDF 展示区（PDF.js 渲染，适配手机竖屏滚动查看） */
+  .pdf-wrap{
+    flex:1;position:relative;min-height:0;
+    background:#f5f5f7;
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #pdf-status{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    color:var(--muted);font-size:15px;letter-spacing:1px;z-index:1;text-align:center;
+  }
+
+  /* 合同 Tab 页（合同1 / 合同2） */
+  .tabs{
+    display:flex;flex:none;
+    background:var(--bg);
+    border-bottom:1px solid var(--card-border);
+    padding:0 8px;
+  }
+  .tab{
+    flex:1;border:none;cursor:pointer;
+    padding:14px 0;background:transparent;
+    font-size:15px;font-weight:600;letter-spacing:2px;
+    color:var(--muted);
+    position:relative;
+    transition:color .25s ease;
+    font-family:inherit;
+  }
+  .tab.active{color:var(--gold-text);}
+  .tab.active::after{
+    content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:36px;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,var(--gold-2),var(--gold-deep));
+  }
+
+  .pdf-container{display:none;}
+  .pdf-container.active{display:block;}
+  .pdf-container canvas{
+    display:block;width:100%;height:auto;background:#fff;margin:0 auto;
+    box-shadow:0 6px 20px rgba(0,0,0,.18);
+  }
+  .pdf-container canvas + canvas{border-top:1px solid #e5e5e8;}
+
+  @media (max-width:600px){
+    .header{padding:10px 14px;}
+    .brand{font-size:15px;gap:8px;}
+    .tab{font-size:14px;padding:13px 0;}
+    .loader-brand{font-size:38px;letter-spacing:5px;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ===================== 加载页 ===================== -->
+  <div id="loader">
+    <div class="loader-inner">
+      <div class="loader-brand">产品采购意向书</div>
+      <div class="boot-ring">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="5"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="url(#bootGrad)" stroke-width="5"
+                  stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" id="bootCircle"
+                  transform="rotate(-90 60 60)" style="filter:drop-shadow(0 0 6px rgba(232,182,76,.35));"/>
+          <defs>
+            <linearGradient id="bootGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f6d489"/>
+              <stop offset="100%" stop-color="#c8902f"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="boot-num"><b id="bnum">0</b><span>%</span></div>
+      </div>
+      <div class="loader-text">加载中<span class="dots"><i>.</i><i>.</i><i>.</i></span></div>
+    </div>
+  </div>
+
+  <!-- ===================== 主页面 ===================== -->
+  <div id="main">
+
+    <header class="header">
+      <div class="brand">
+     
+        <b>产品采购意向书</b>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="1">合同</button> 
+    </div>
+
+    <div class="pdf-wrap">
+      <div id="pdf-status">加载 PDF 中…</div>
+      <div id="pdf-container-1" class="pdf-container active"></div>
+      <div id="pdf-container-2" class="pdf-container"></div>
+    </div>
+
+  </div>
+
+<script src="js/pdf.min.js"></script>
+<script>
+(function () {
+  var LOAD_MS = 15000; // 20 秒后进入主页面
+
+  var loader = document.getElementById('loader');
+  var main   = document.getElementById('main');
+  var status = document.getElementById('pdf-status');
+  var box1   = document.getElementById('pdf-container-1');
+  var box2   = document.getElementById('pdf-container-2');
+  var wrap   = document.querySelector('.pdf-wrap');
+  var bn     = document.getElementById('bnum');
+  var circle = document.getElementById('bootCircle');
+  var LEN    = 326.73; // 2 * π * 52
+
+  var renderToken = 0;
+  var lastWidth   = 0;
+  var resizeTimer = null;
+
+  // PDF.js：使用本地 worker
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
+  }
+
+  // 进入主页面
+  function enter() {
+    loader.classList.add('is-leaving');
+    main.classList.add('is-active');
+    setTimeout(function () { if (loader && loader.parentNode) loader.parentNode.removeChild(loader); }, 800);
+  }
+
+  // 圆圈百分比：0 → 100%，共 20 秒，走完进入主页面
+  var p = 0;
+  var step = LOAD_MS / 100; // 每 1% 用时
+  var timer = setInterval(function () {
+    p++;
+    circle.style.strokeDashoffset = LEN * (1 - p / 100);
+    bn.textContent = p;
+    if (p >= 100) {
+      clearInterval(timer);
+      enter();
+    }
+  }, step);
+
+  // 渲染单个 PDF（逐页渲染，竖屏滚动查看）
+  async function renderPdf(url, container) {
+    var token = renderToken;
+    // 用始终可见的 .pdf-wrap 计算宽度，避免隐藏面板（display:none）宽度为 0
+    var cssW = wrap.clientWidth || document.documentElement.clientWidth;
+
+    var pdf = await window.pdfjsLib.getDocument(url).promise;
+    if (token !== renderToken) return;
+    container.innerHTML = '';
+
+    for (var p2 = 1; p2 <= pdf.numPages; p2++) {
+      if (token !== renderToken) return;
+      var page = await pdf.getPage(p2);
+      if (token !== renderToken) return;
+
+      var base = page.getViewport({ scale: 1 });
+      var dpr  = window.devicePixelRatio || 1;
+      var scale = cssW / base.width;
+      var viewport = page.getViewport({ scale: scale * dpr });
+
+      var canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
+      container.appendChild(canvas);
+
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+    }
+  }
+
+  // 渲染两份合同（合同1 → cn1.pdf，合同2 → cn2.pdf；逐个渲染，分开处理错误）
+  async function renderAll() {
+    renderToken++;
+    var token = renderToken;
+
+    if (!window.pdfjsLib) {
+      status.style.display = 'block';
+      status.textContent = 'PDF 组件未加载';
+      return;
+    }
+
+    status.style.display = 'block';
+    status.textContent = '加载 PDF 中…';
+
+    var jobs = [
+      { url: 'pdf/cn.pdf', box: box1, label: '合同1' },
+    ];
+
+    for (var i = 0; i < jobs.length; i++) {
+      if (token !== renderToken) return;
+      try {
+        await renderPdf(jobs[i].url, jobs[i].box);
+      } catch (err) {
+        console.error(jobs[i].label + '（' + jobs[i].url + '）加载失败：', err);
+        jobs[i].box.innerHTML = '<div style="padding:48px 20px;text-align:center;color:var(--muted);font-size:14px;letter-spacing:1px;">' + jobs[i].label + ' 加载失败</div>';
+      }
+    }
+
+    if (token !== renderToken) return;
+    status.style.display = 'none';
+    lastWidth = wrap.clientWidth;
+  }
+
+  // 手机旋转 / 窗口缩放后重新排版
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      var w = wrap.clientWidth;
+      if (Math.abs(w - lastWidth) >= 40) {
+        renderAll();
+      }
+    }, 350);
+  });
+
+  // 合同 Tab 切换
+  var tabs = document.querySelectorAll('.tab');
+  var panels = [box1, box2];
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var idx = parseInt(tab.getAttribute('data-tab'), 10) - 1;
+      panels.forEach(function (panel, i) {
+        panel.classList.toggle('active', i === idx);
+      });
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
